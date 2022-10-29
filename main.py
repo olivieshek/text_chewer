@@ -1,33 +1,36 @@
 """Text-Chewer program"""
-import sys  # system module
 import re  # разбираем строку на отдельные слова
 from collections import Counter  # ищем часто используемые слова, счетчик объектов
-from charset_normalizer import from_path  # pip3 install charset-normalizer
-from bs4 import BeautifulSoup  # pip3 install bs4
-from docx import Document  # pip3 install python-docx
-import pyperclip  # pip3 install pyperclip
+import os  # работа с файлами
+
 import pymorphy2  # pip3 install pymorphy2; pip3 install pymorphy2-dicts
+import pyperclip  # pip3 install pyperclip
+from bs4 import BeautifulSoup  # pip3 install bs4
+from charset_normalizer import from_path  # pip3 install charset-normalizer
+from docx import Document  # pip3 install python-docx
 from wordcloud import WordCloud  # pip3 install wordcloud
+import pathlib  # получаем путь к файлу
 
 
 class TheChewer:
     """Класс приложения"""
-
-    def __init__(self):
+    def __init__(self, file_path: str):
         """Инициализация объекта класса приложения"""
         self.toggle_copying = "off"
 
-        self.file_path = "Dishes/test.docx"
+        self.file_path = file_path
 
-        self.file_name = (
-            re.search(r"/\w+\.\w+$", self.file_path).group().replace("/", "")
-        )
+        self.file_name = ('TEST_NAME')  # FIXME: надо доставать имя из пути
         self.file_extension = re.search(r"\.\w+$", self.file_path).group()
+        try:
+            self.content = str(from_path(self.file_path).best())  # нормализация кодировки
+        except FileNotFoundError:
+            # self.file_path = str(SELF_PATH) + '/' + str(DISH_PATH)
+            print('error!')
 
-        self.content = str(from_path(self.file_path).best())  # нормализация кодировки
         self.content = self.make_text_from_file()
 
-        self.words = self.write_all_words(self.content)
+        self.words = self.write_all_words()
 
         self.parts_of_speech = ["NOUN", "VERB"]
         self.infinitive_words = self.write_infinitives(self.parts_of_speech)
@@ -76,9 +79,11 @@ class TheChewer:
 
     # ------------------------------
 
-    def write_all_words(self, text: str) -> list:
+    def write_all_words(self, text: str = None) -> list:
         """Создание списка всех слов текста;
         self.words"""
+        if text is None:
+            text = self.content
         words = re.findall(r"[а-яё0-9]+", text.lower())
         return words
 
@@ -148,10 +153,12 @@ class TheChewer:
 
 
 if __name__ == "__main__":
-    DISH_PATH = "Dishes/test.docx"
-    app = the_chewer()
+    SELF_PATH = pathlib.Path().resolve()
+    # DISH_PATH = pathlib.Path("Dishes/file.txt")
+    DISH_PATH = "/ Users / vessel / PycharmProjects / text_chewer_project / text_chewer / chewer / Dishes / file.txt"
+    app = TheChewer(file_path=DISH_PATH)
     app.file_path = DISH_PATH
-    app.toggle_copying = "off"
+    app.toggle_copying = "on"
 
     if app.toggle_copying == "on":
         pyperclip.copy(app.content)
