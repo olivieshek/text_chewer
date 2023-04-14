@@ -1,0 +1,13 @@
+{% extends "chewer/base.html" %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block body %}
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ form_field.as_p }}
+    <input type="submit" value="Сделать облако слов">
+</form>
+{% endblock %}
